@@ -8,13 +8,13 @@ from nltk.stem.porter import PorterStemmer
 # Download stopwords from nltk
 nltk.download('stopwords')
 
-def load_and_preprocess_data(filepath, num_reviews=900):
+def load_and_preprocess_data(filepath, num_reviews=None):
     """
     Loads and preprocesses the dataset.
     
     Parameters:
     - filepath: str, path to the dataset in a TSV file.
-    - num_reviews: int, the number of reviews to process (default is 900).
+    - num_reviews: int or None, the number of reviews to process (process all if None).
     
     Returns:
     - tuple: 
@@ -24,61 +24,45 @@ def load_and_preprocess_data(filepath, num_reviews=900):
     print(f"Loading dataset from {filepath}...")
     
     try:
-        # Load dataset from the given filepath, considering only the first 'num_reviews' rows
         dataset = pd.read_csv(filepath, delimiter='\t', quoting=3)
-        dataset = dataset.iloc[:num_reviews, :]
+        if num_reviews is not None:
+            dataset = dataset.iloc[:num_reviews, :]
     except Exception as e:
         print(f"Error loading dataset from {filepath}: {e}")
+        return [], []
 
     print("Loading complete.")
     
     try:
         print(f"Preprocessing reviews...")
-
-        # Preprocess reviews
-        # TODO: Perform preprocessing in 'lib_ml' package
-        corpus = _preprocess(dataset, num_reviews)
+        corpus = _preprocess(dataset)
     except Exception as e:
         print(f"Error preprocessing reviews: {e}")
+        return [], []
 
     print("Preprocessing complete.")
-
-    # Return the preprocessed reviews and labels
     return corpus, dataset.iloc[:, -1].values 
 
-def _preprocess(dataset, num_reviews):
+def _preprocess(dataset):
     """
-    Preprocesses the reviews.
+    Preprocesses the reviews in the dataset.
     
     Parameters:
     - dataset: pandas DataFrame, the dataset containing reviews.
-    - num_reviews: int, the number of reviews to process.
     
     Returns:
     - list: A list of preprocessed reviews (corpus).
     """
-    # Initialize the Porter Stemmer and stopwords
     ps = PorterStemmer()
     all_stopwords = stopwords.words('english')
-    
-    # Remove 'not' from the stopwords list to retain negatives
-    all_stopwords.remove('not')
+    if 'not' in all_stopwords:
+        all_stopwords.remove('not')
 
-    # Initialize list to store the preprocessed reviews
-    corpus = [] 
-
-    # Process each review 
-    for i in range(num_reviews):
-        # Remove non-alphabetical characters and split the review into words
-        review = re.sub('[^a-zA-Z]', ' ', dataset['Review'][i])
-        review = review.lower()
-        review = review.split()
-
-        # Apply stemming and remove stopwords
+    corpus = []
+    for review in dataset['Review']:
+        review = re.sub('[^a-zA-Z]', ' ', review)
+        review = review.lower().split()
         review = [ps.stem(word) for word in review if word not in set(all_stopwords)]
-
-        # Join the processed words back into a single string and append to corpus
-        review = ' '.join(review)
-        corpus.append(review)
+        corpus.append(' '.join(review))
 
     return corpus

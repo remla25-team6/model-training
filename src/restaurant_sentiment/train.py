@@ -57,7 +57,7 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     # Save BoW dictionary to use in inference
     print("Saving BoW dictionary to .pkl file...")
     dump(model, "model/bow.pkl")
-    print("Completed BoW dictionary saving")
+    print("Completed BoW dictionary saving.")
 
     # Save model
     print("Saving model to .pkl file...")
