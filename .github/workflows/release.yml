@@ -38,9 +38,16 @@ jobs:
         with:
           tag_name: v${{ env.version }}
 
-      - name: Upload models
+      - name: Upload BoW Vectorizer Model
         uses: svenstaro/upload-release-action@v2
-        with:  
-          file: model/*.pkl
+        with: 
+          file: model/bow.pkl
+          asset_name: bow-v${{ env.version }}.pkl
+          tag: v${{ env.version }}
+
+      - name: Upload model
+        uses: svenstaro/upload-release-action@v2
+        with: 
+          file: model/model.pkl
           asset_name: model-v${{ env.version }}.pkl
           tag: v${{ env.version }}
