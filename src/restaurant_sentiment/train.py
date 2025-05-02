@@ -27,8 +27,8 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     # TODO: Optionally perform text vectorization in 'lib_ml' package
     # Convert text data to feature vectors using CountVectorizer
     print("Vectorizing text...")
-    vectorizer = CountVectorizer(max_features=max_features)
-    X = vectorizer.fit_transform(X_raw).toarray()
+    cv = CountVectorizer(max_features=max_features)
+    X = cv.fit_transform(X_raw).toarray()
 
     # Split data into training and testing sets
     print("Splitting data into train and test sets...")
@@ -51,11 +51,18 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     print(cm)
     print(f"Accuracy: {acc}")
 
+    # Create 'model' directory if it does not exist
+    os.makedirs("model", exist_ok=True)
+
+    # Save BoW dictionary to use in inference
+    print("Saving BoW dictionary to .pkl file...")
+    dump(model, "model/bow.pkl")
+    print("Completed BoW dictionary saving")
+
     # Save model
     print("Saving model to .pkl file...")
-    os.makedirs("model", exist_ok=True)
     dump(model, "model/model.pkl")
-    print("Completed saving.")
+    print("Completed model saving.")
 
 if __name__ == "__main__":
     train()
