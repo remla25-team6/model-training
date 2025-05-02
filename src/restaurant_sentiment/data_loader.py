@@ -36,7 +36,7 @@ def load_and_preprocess_data(filepath, num_reviews=900):
         print(f"Preprocessing reviews...")
 
         # Preprocess reviews
-        # TODO: Replace with call to 'lib_ml' once package is available
+        # TODO: Perform preprocessing in 'lib_ml' package
         corpus = _preprocess(dataset, num_reviews)
     except Exception as e:
         print(f"Error preprocessing reviews: {e}")
