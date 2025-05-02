@@ -13,7 +13,7 @@ def load_and_preprocess_data(filepath, num_reviews=900):
     Loads and preprocesses the dataset.
     
     Parameters:
-    - filepath: str, path to the dataset (CSV file).
+    - filepath: str, path to the dataset in a TSV file.
     - num_reviews: int, the number of reviews to process (default is 900).
     
     Returns:
