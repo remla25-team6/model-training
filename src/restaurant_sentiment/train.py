@@ -50,8 +50,11 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     print(cm)
     print(f"Accuracy: {acc}")
 
+    # Save model
+    print("Saving model to .pkl file...")
     os.makedirs("model", exist_ok=True)
-    dump(model, "models/model.pkl")
+    dump(model, "model/model.pkl")
+    print("Completed saving.")
 
 if __name__ == "__main__":
     train()
