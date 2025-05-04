@@ -23,8 +23,7 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     """
     print("Loading and preprocessing data...")
     X_raw, y = load_and_preprocess_data(filepath)
-
-    # TODO: Optionally perform text vectorization in 'lib_ml' package
+    
     # Convert text data to feature vectors using CountVectorizer
     print("Vectorizing text...")
     cv = CountVectorizer(max_features=max_features)
