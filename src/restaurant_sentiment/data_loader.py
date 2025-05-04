@@ -2,6 +2,7 @@ import re
 import nltk
 import pandas as pd
 
+from lib_ml import preprocess
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
@@ -35,34 +36,10 @@ def load_and_preprocess_data(filepath, num_reviews=None):
     
     try:
         print(f"Preprocessing reviews...")
-        corpus = _preprocess(dataset)
+        corpus = preprocess(dataset)
     except Exception as e:
         print(f"Error preprocessing reviews: {e}")
         return [], []
 
     print("Preprocessing complete.")
     return corpus, dataset.iloc[:, -1].values 
-
-def _preprocess(dataset):
-    """
-    Preprocesses the reviews in the dataset.
-    
-    Parameters:
-    - dataset: pandas DataFrame, the dataset containing reviews.
-    
-    Returns:
-    - list: A list of preprocessed reviews (corpus).
-    """
-    ps = PorterStemmer()
-    all_stopwords = stopwords.words('english')
-    if 'not' in all_stopwords:
-        all_stopwords.remove('not')
-
-    corpus = []
-    for review in dataset['Review']:
-        review = re.sub('[^a-zA-Z]', ' ', review)
-        review = review.lower().split()
-        review = [ps.stem(word) for word in review if word not in set(all_stopwords)]
-        corpus.append(' '.join(review))
-
-    return corpus
