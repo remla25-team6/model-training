@@ -1,13 +1,6 @@
-import re
-import nltk
 import pandas as pd
 
-from lib_ml import preprocess
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
-
-# Download stopwords from nltk
-nltk.download('stopwords')
+from lib_ml.preprocess import preprocess
 
 def load_and_preprocess_data(filepath, num_reviews=None):
     """
@@ -36,7 +29,7 @@ def load_and_preprocess_data(filepath, num_reviews=None):
     
     try:
         print(f"Preprocessing reviews...")
-        corpus = preprocess(dataset)
+        corpus = preprocess(dataset, dataset.shape[0])
     except Exception as e:
         print(f"Error preprocessing reviews: {e}")
         return [], []
