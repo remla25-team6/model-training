@@ -1,9 +1,7 @@
 name: Pre-release
 
 on:
-  push:
-    branches:
-        main
+  push
 
 env:
   PYTHON_VERSION: '3.12.3'
