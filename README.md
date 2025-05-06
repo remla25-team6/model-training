@@ -53,3 +53,5 @@ git push origin v<MAJOR>.<MINOR>.<PATCH>
 This will trigger the `release.yml` GitHub Actions workflow, which trains the model and uploads it as an artifact to GitHub Releases. Once published, model releases are publicly accessible. For example, the download link for version `v0.1.0` would be:
 [https://github.com/remla25-team6/model-training/releases/download/v0.1.0/model-v0.1.0.pkl](https://github.com/remla25-team6/model-training/releases/download/v0.1.0/model-v0.1.0.pkl)
 
+## AI Disclaimer
+This documented was refined using ChatGPT 4o.

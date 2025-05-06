@@ -1,15 +1,19 @@
-name: Release
+name: Pre-release
 
 on:
   push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+    branches:
+        main
 
 env:
   PYTHON_VERSION: '3.12.3'
 
 jobs:
-  train-and-release:
+  train-and-prerelease:
     runs-on: ubuntu-24.04
+    
+    permissions:
+        contents: write
 
     steps:
       - name: Checkout code
@@ -25,18 +29,37 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Parse version from tag
+      - name: Get latest tag
         run: |
-          VERSION=${GITHUB_REF:11}
-          echo "version=$VERSION" >> $GITHUB_ENV
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
+
+      - name: Calculate pre-release version
+        run: |
+          VERSION=${latest_tag#v}
+          MAJOR=$(echo "$VERSION" | cut -d . -f 1)
+          MINOR=$(echo "$VERSION" | cut -d . -f 2)
+          PATCH=$(echo "$VERSION" | cut -d . -f 3)
+          PATCH=$((PATCH + 1))
+          DATETIME=$(date +%Y%m%d.%H%M%S)
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH-pre.$DATETIME"
+          echo "version=$NEW_VERSION"  >> $GITHUB_ENV
 
       - name: Train model
         run: python src/restaurant_sentiment/train.py
 
-      - name: Create GitHub release
+      - name: Tag pre-release commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v${{ env.version }}
+          git push origin v${{ env.version }}
+
+      - name: Create GitHub pre-release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.version }}
+          prerelease: true
 
       - name: Upload BoW vectorizer model
         uses: svenstaro/upload-release-action@v2
