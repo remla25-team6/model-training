@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
-def train(data_path = "data", max_features=1420, test_size=0.20, random_state=0):
+def train(data_path = "data", model_path = "model", max_features=1420, test_size=0.20, random_state=0):
     """
     Loads data, vectorizes text using Bag-of-Words, and trains a Naive Bayes classifier.
     
@@ -39,16 +39,16 @@ def train(data_path = "data", max_features=1420, test_size=0.20, random_state=0)
     model.fit(X_train, y_train)
 
     # Create 'model' directory if it does not exist
-    os.makedirs("model", exist_ok=True)
+    os.makedirs(model_path, exist_ok=True)
 
     # Save BoW dictionary to use in inference
     print("Saving BoW dictionary to .pkl file...")
-    dump(cv, "model/bow.pkl")
+    dump(cv, os.path.join(model_path, "bow.pkl"))
     print("Completed BoW dictionary saving.")
 
     # Save model
     print("Saving model to .pkl file...")
-    dump(model, "model/model.pkl")
+    dump(model, os.path.join(model_path, "model.pkl"))
     print("Completed model saving.")
 
     # Dump the train and test splits for the evaluation step
