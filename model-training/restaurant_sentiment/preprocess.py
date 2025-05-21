@@ -1,5 +1,8 @@
 # Disclaimer: Documentation was refined using ChatGPT 4o
 import pandas as pd
+from joblib import dump
+import os
+import argparse
 
 from lib_ml.preprocess import preprocess
 
@@ -36,4 +39,30 @@ def load_and_preprocess_data(filepath, num_reviews=None):
         return [], []
 
     print("Preprocessing complete.")
-    return corpus, dataset.iloc[:, -1].values 
+    return corpus, dataset.iloc[:, -1].values
+
+def main(data_path = 'data', filepath = 'data/RestaurantReviews_HistoricDump.tsv'):
+
+    os.makedirs(data_path, exist_ok=True)
+
+
+    corpus, labels = load_and_preprocess_data(filepath)
+
+    corpus_file = os.path.join(data_path, 'corpus.pkl')
+    labels_file = os.path.join(data_path, 'labels.pkl')
+
+    dump(corpus, corpus_file)
+    dump(labels, labels_file)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--data",
+        default="data"
+    )
+    parser.add_argument(
+        "--filepath",
+        default="data/RestaurantReviews_HistoricDump.tsv"
+    )
+    args = parser.parse_args()
+    main(data_path=args.data, filepath=args.filepath)
