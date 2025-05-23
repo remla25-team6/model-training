@@ -178,4 +178,5 @@ cython_debug/
 # Trained models
 model/
 
+# Data
 data/
