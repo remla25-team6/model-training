@@ -1,0 +1,7 @@
+stages:
+  get_data:
+    cmd: python model-training/restaurant_sentiment/get_data.py
+    deps:
+    - model-training/restaurant_sentiment/get_data.py
+    outs:
+    - data/RestaurantReviews_HistoricDump.tsv
