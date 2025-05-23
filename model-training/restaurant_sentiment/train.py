@@ -1,15 +1,14 @@
 # Disclaimer: Documentation was refined using ChatGPT 4o
 import os
+import argparse
 
-from data_loader import load_and_preprocess_data
-from joblib import dump
+from joblib import load, dump
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import confusion_matrix, accuracy_score
 
-def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=1420, test_size=0.20, random_state=0):
+def train(data_path = "data", model_path = "model", max_features=1420, test_size=0.20, random_state=0):
     """
     Loads data, vectorizes text using Bag-of-Words, and trains a Naive Bayes classifier.
     
@@ -22,9 +21,9 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     Returns:
     - None
     """
-    print("Loading and preprocessing data...")
-    X_raw, y = load_and_preprocess_data(filepath)
-    
+    print("Loading data...")
+    X_raw, y = load(os.path.join(data_path, 'corpus.pkl')), load(os.path.join(data_path, 'labels.pkl'))
+
     # Convert text data to feature vectors using CountVectorizer
     print("Vectorizing text...")
     cv = CountVectorizer(max_features=max_features)
@@ -39,30 +38,33 @@ def train(filepath = "data/RestaurantReviews_HistoricDump.tsv", max_features=142
     model = GaussianNB()
     model.fit(X_train, y_train)
 
-    # Predict on test data
-    print("Predicting on test data...")
-    y_pred = model.predict(X_test)
-
-    # Evaluate model performance
-    cm = confusion_matrix(y_test, y_pred)
-    acc = accuracy_score(y_test, y_pred)
-
-    print("Confusion Matrix:")
-    print(cm)
-    print(f"Accuracy: {acc}")
-
     # Create 'model' directory if it does not exist
-    os.makedirs("model", exist_ok=True)
+    os.makedirs(model_path, exist_ok=True)
 
     # Save BoW dictionary to use in inference
     print("Saving BoW dictionary to .pkl file...")
-    dump(cv, "model/bow.pkl")
+    dump(cv, os.path.join(model_path, "bow.pkl"))
     print("Completed BoW dictionary saving.")
 
     # Save model
     print("Saving model to .pkl file...")
-    dump(model, "model/model.pkl")
+    dump(model, os.path.join(model_path, "model.pkl"))
     print("Completed model saving.")
 
+    # Dump the train and test splits for the evaluation step
+    os.makedirs(data_path, exist_ok=True)
+
+    dump(X_train, os.path.join(data_path, 'X_train.pkl'))
+    dump(X_test, os.path.join(data_path, 'X_test.pkl'))
+    dump(y_train, os.path.join(data_path, 'y_train.pkl'))
+    dump(y_test, os.path.join(data_path, 'y_test.pkl'))
+
 if __name__ == "__main__":
-    train()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--data",
+        default="data"
+    )
+    args = parser.parse_args()
+
+    train(data_path=args.data)

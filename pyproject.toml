@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model-training"
+version = "0.1.1"
+description = "Model training library for sentiment analysis model"
+readme = "README.md"
+
+dependencies = [
+    "joblib==1.4.2",
+    "pandas==2.2.3",
+    "scikit-learn==1.6.1",
+    "requests==2.32.3",
+    "lib-ml @ git+https://github.com/remla25-team6/lib-ml.git"
+]
+
+[tool.setuptools]
+packages = { find = { where = ["model-training"] } }

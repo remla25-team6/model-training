@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install .
 
       - name: Get latest tag
         run: |
@@ -47,8 +47,14 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$PATCH-pre.$DATETIME"
           echo "version=$NEW_VERSION"  >> $GITHUB_ENV
 
+      - name: Download dataset
+        run: python model-training/restaurant_sentiment/get_data.py
+
+      - name: Preprocess data
+        run: python model-training/restaurant_sentiment/preprocess.py
+
       - name: Train model
-        run: python src/restaurant_sentiment/train.py
+        run: python model-training/restaurant_sentiment/train.py
 
       - name: Tag pre-release commit
         run: |
