@@ -180,3 +180,6 @@ model/
 
 # Data
 data/
+
+# Google Cloud Storage Keyfile
+keyfile.json
