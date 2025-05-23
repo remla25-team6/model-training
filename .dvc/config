@@ -1,5 +1,5 @@
 [core]
     analytics = false
-    remote = gdrive_remote
-['remote "gdrive_remote"']
-    url = gdrive://1sKxp7BanPVJQcIG7TteE5PbeWasVxB1H
+    remote = gcs_remote
+['remote "gcs_remote"']
+    url = gs://dvc-bucket-remla25-team6/restaurant-sentiment
