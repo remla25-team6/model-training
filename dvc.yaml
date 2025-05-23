@@ -14,7 +14,7 @@ stages:
     outs:
     - data/corpus.pkl
     - data/labels.pkl
-    
+
   train:
     cmd: python model-training/restaurant_sentiment/train.py
     deps:
@@ -28,3 +28,14 @@ stages:
     - data/y_train.pkl
     - model/bow.pkl
     - model/model.pkl
+
+  evaluate:
+    cmd: python model-training/restaurant_sentiment/eval.py
+    deps:
+    - data/X_test.pkl
+    - data/y_test.pkl
+    - model-training/restaurant_sentiment/eval.py
+    - model/model.pkl
+    metrics:
+    - model/metrics.json:
+        cache: true
