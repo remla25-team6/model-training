@@ -8,6 +8,7 @@ from restaurant_sentiment.preprocess import main
 import subprocess
 import shutil
 import time
+from pathlib import Path
 
 @pytest.fixture(scope="session")
 def data_dir(tmp_path_factory):
@@ -38,57 +39,58 @@ def test_accuracy_stability(data_dir, baseline_accuracy, tmp_path, seed):
     X_test = load(os.path.join(data_dir, "X_test.pkl"))
     y_test = load(os.path.join(data_dir, "y_test.pkl"))
     acc = accuracy_score(y_test, model.predict(X_test))
-    # allow up to 8% relative difference
+    # allow up to 0.08 difference
     assert acc == pytest.approx(baseline_accuracy, abs=0.08), (
         f"Seed {seed}: accuracy {acc} differs from baseline {baseline_accuracy}"
     )
     
-# Roll-back speed test with dvc repro
-MODEL_REL = os.path.join("model", "model.pkl")
-X_REL     = os.path.join("data", "X_test.pkl")
-Y_REL     = os.path.join("data", "y_test.pkl")
+# Roll-back speed & accuracy test with dvc repro
+MODEL   = Path("model") / "model.pkl"
+X_TEST  = Path("data")  / "X_test.pkl"
+Y_TEST  = Path("data")  / "y_test.pkl"
 
-def _accuracy(repo_path):
-    mdl = load(os.path.join(repo_path, MODEL_REL))
-    X   = load(os.path.join(repo_path, X_REL))
-    y   = load(os.path.join(repo_path, Y_REL))
-    return accuracy_score(y, mdl.predict(X))
+def _measure_accuracy_at(repo_path, rev):
+    subprocess.run(["git", "checkout", rev], cwd=repo_path, check=True)
+    subprocess.run(["dvc", "repro", "-q"],   cwd=repo_path, check=True)
+    mdl = load(Path(repo_path) / MODEL)
+    X   = load(Path(repo_path) / X_TEST)
+    y   = load(Path(repo_path) / Y_TEST)
+    acc = accuracy_score(y, mdl.predict(X))
+    subprocess.run(["dvc", "gc", "-w", "-f", "-q"], cwd=repo_path, check=True)
+    subprocess.run(["git", "restore", "."], cwd=repo_path, check=True)
+    return acc
 
 @pytest.fixture(scope="session")
 def repo_clone(tmp_path_factory):
-    root = subprocess.check_output(
-        ["git", "rev-parse", "--show-toplevel"], text=True
-    ).strip()
-    clone_dir = tmp_path_factory.mktemp("repo_clone")
-    subprocess.run(["git", "clone", "--quiet", root, str(clone_dir)], check=True)
-    return str(clone_dir)
-
-def _checkout_repro(repo, commit, env):
-    subprocess.run(["git", "checkout", commit], cwd=repo, env=env, check=True)
-    subprocess.run(["dvc", "repro", "-q"],  cwd=repo, env=env, check=True)
-    acc = _accuracy(repo)
-    subprocess.run(["dvc", "gc", "-w", "-f", "-q"], cwd=repo, env=env, check=True)
-    subprocess.run(["git", "restore", '.'], cwd=repo, env=env, check=True)
-    return acc
+    root = (
+        subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"], text=True
+        )
+        .strip()
+    )
+    clone = tmp_path_factory.mktemp("repo_clone")
+    subprocess.run(["git", "clone", "--quiet", root, str(clone)], check=True)
+    return clone
 
 @pytest.mark.skipif(
     shutil.which("git") is None or shutil.which("dvc") is None,
     reason="Git and/or DVC not available",
 )
-def test_repo_rollback_speed(repo_clone):
-    repo   = repo_clone
-    env    = os.environ.copy()
+def test_repo_rollback_speed_and_accuracy(repo_clone):
+    repo = repo_clone
 
-    orig_rev = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=repo, text=True
-    ).strip()
-    
-    target = "HEAD~1" # rollback target to previous commit
+    # measure HEAD accuracy
+    head_acc = _measure_accuracy_at(repo, "HEAD")
 
-    acc_head = _checkout_repro(repo, orig_rev, env)
-
+    # time & measure rollback
     t0 = time.time()
-    acc_old = _checkout_repro(repo, target, env)
+    rollback_acc = _measure_accuracy_at(repo, "HEAD~1")
     elapsed = time.time() - t0
 
+    # speed assertion
     assert elapsed < 30, f"rollback too slow: {elapsed:.2f}s"
+
+    # check if accuracy approx the same
+    assert rollback_acc == pytest.approx(head_acc, abs=0.08), (
+        f"accuracy drifted: HEAD {head_acc:.3f} vs rollback {rollback_acc:.3f}"
+    )
