@@ -185,4 +185,7 @@ data/
 keyfile.json
 
 # Vscode
-.vscode
+.vscode/
+
+# pytest benchmarks
+.benchmarks/
