@@ -48,45 +48,47 @@ MODEL_REL = os.path.join("model", "model.pkl")
 X_REL     = os.path.join("data", "X_test.pkl")
 Y_REL     = os.path.join("data", "y_test.pkl")
 
-@pytest.mark.skipif(
-    shutil.which("git") is None or shutil.which("dvc") is None,
-    reason="Git and/or DVC not available",
-)
-
 def _accuracy(repo_path):
     mdl = load(os.path.join(repo_path, MODEL_REL))
     X   = load(os.path.join(repo_path, X_REL))
     y   = load(os.path.join(repo_path, Y_REL))
     return accuracy_score(y, mdl.predict(X))
 
-def _checkout_repro_cleanup(repo, commit):
-    subprocess.run(["git", "checkout", commit], cwd=repo, check=True)
-    subprocess.run(["dvc", "repro", "-q"], cwd=repo, check=True)
-    acc = _accuracy(repo)
-    # wipe any un-needed workspace files / tmp cache
-    subprocess.run(["dvc", "gc", "-w", "-f", "-q"], cwd=repo, check=True)
-    return acc
-
-def test_repo_rollback_speed_and_correctness():
-    repo = subprocess.check_output(
+@pytest.fixture(scope="session")
+def repo_clone(tmp_path_factory):
+    root = subprocess.check_output(
         ["git", "rev-parse", "--show-toplevel"], text=True
     ).strip()
+    clone_dir = tmp_path_factory.mktemp("repo_clone")
+    subprocess.run(["git", "clone", "--quiet", root, str(clone_dir)], check=True)
+    return str(clone_dir)
+
+def _checkout_repro(repo, commit, env):
+    subprocess.run(["git", "checkout", commit], cwd=repo, env=env, check=True)
+    subprocess.run(["dvc", "repro", "-q"],  cwd=repo, env=env, check=True)
+    acc = _accuracy(repo)
+    subprocess.run(["dvc", "gc", "-w", "-f", "-q"], cwd=repo, env=env, check=True)
+    return acc
+
+@pytest.mark.skipif(
+    shutil.which("git") is None or shutil.which("dvc") is None,
+    reason="Git and/or DVC not available",
+)
+def test_repo_rollback_speed_and_correctness(repo_clone):
+    repo   = repo_clone
+    env    = os.environ.copy()
+    env["PYTHONPATH"] = repo + os.pathsep + env.get("PYTHONPATH", "")
+
     orig_rev = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=repo, text=True
     ).strip()
     target = os.getenv("ROLLBACK_COMMIT", "HEAD~1")
 
-    # build & evaluate model at HEAD
-    acc_head = _checkout_repro_cleanup(repo, orig_rev)
+    acc_head = _checkout_repro(repo, orig_rev, env)
 
-    try:
-        t0 = time.time()
-        # rollback to older commit, rebuild & measure
-        acc_old = _checkout_repro_cleanup(repo, target)
-        elapsed = time.time() - t0
+    t0 = time.time()
+    acc_old = _checkout_repro(repo, target, env)
+    elapsed = time.time() - t0
 
-        assert acc_head != pytest.approx(acc_old), "model did not change after rollback"
-        assert elapsed < 30, f"rollback too slow: {elapsed:.2f}s"
-    finally:
-        # always restore workspace for the rest of the suite
-        _checkout_repro_cleanup(repo, orig_rev)
+    assert acc_head != pytest.approx(acc_old), "model did not change after rollback"
+    assert elapsed < 30, f"rollback too slow: {elapsed:.2f}s"
