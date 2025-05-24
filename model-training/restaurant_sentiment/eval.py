@@ -1,5 +1,6 @@
 import os
 import argparse
+import json
 from sklearn.metrics import confusion_matrix, accuracy_score
 from joblib import load
 
@@ -15,6 +16,9 @@ def evaluate(data_path = "data", model_path ="model"):
     # Evaluate model performance
     cm = confusion_matrix(y_test, y_pred)
     acc = accuracy_score(y_test, y_pred)
+
+    with open(os.path.join(model_path, "metrics.json"), "w") as f:
+        json.dump({"test_accuracy": acc}, f)
 
     print("Confusion Matrix:")
     print(cm)
