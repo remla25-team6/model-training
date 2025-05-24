@@ -183,3 +183,6 @@ data/
 
 # Google Cloud Storage Keyfile
 keyfile.json
+
+# Vscode
+.vscode
