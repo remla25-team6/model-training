@@ -11,3 +11,8 @@ matplotlib==3.10.3
 
 # Testing
 pytest==8.3.5
+
+# Linting
+flake8==7.1.2
+bandit==1.8.3
+pylint==3.3.7
