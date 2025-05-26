@@ -1,0 +1,20 @@
+[MASTER]
+ignore=test
+load-plugins=pylint_plugins.ml_code_smell_check
+
+[MESSAGES CONTROL]
+# Disable some common noisy warnings
+disable=C0114,C0115,C0116  # missing docstring stuff
+
+[FORMAT]
+max-line-length=88
+
+[REPORTS]
+output-format=colorized
+reports=no
+
+[TYPECHECK]
+ignored-modules=numpy,pandas 
+
+[SIMILARITIES]
+min-similarity-lines=4

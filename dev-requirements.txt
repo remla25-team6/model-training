@@ -14,3 +14,12 @@ dvc[gs]==3.59.2
 pytest==8.3.5
 psutil==5.*
 pytest-benchmark==5.*
+
+# Linting
+flake8==7.1.2
+bandit==1.8.3
+pylint==3.3.7
+astroid==3.3.10
+
+# Code formatting
+black==25.1.0
