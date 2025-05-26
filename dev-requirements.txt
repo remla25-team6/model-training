@@ -8,7 +8,7 @@ git+https://github.com/remla25-team6/lib-ml.git
 jupyter==1.1.1
 ipykernel==6.29.5
 matplotlib==3.10.3
-dvc[gdrive]==3.59.2
+dvc[gs]==3.59.2
 
 # Testing
 pytest==8.3.5
