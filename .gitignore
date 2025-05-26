@@ -177,3 +177,15 @@ cython_debug/
 
 # Trained models
 model/
+
+# Data
+data/
+
+# Google Cloud Storage Keyfile
+keyfile.json
+
+# Vscode
+.vscode/
+
+# pytest benchmarks
+.benchmarks/
