@@ -1,5 +1,6 @@
 [MASTER]
 ignore=test
+load-plugins=ml_code_smell_check
 
 [MESSAGES CONTROL]
 # Disable some common noisy warnings
