@@ -1,0 +1,5 @@
+[core]
+    analytics = false
+    remote = gcs_remote
+['remote "gcs_remote"']
+    url = gs://dvc-bucket-remla25-team6/restaurant-sentiment
