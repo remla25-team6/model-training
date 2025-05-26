@@ -14,8 +14,8 @@ def sample_data(tmp_path):
 
 def test_load_and_preprocess_data(sample_data):
     corpus, labels = load_and_preprocess_data(sample_data)
-    assert len(corpus) == 2
-    assert len(labels) == 2
+    assert len(corpus) == 2, f"corpus length is not 2 but {len(corpus)}"
+    assert len(labels) == 2, f"labels length is not 2 but {len(labels)}"
 
 def test_stopword_removal(sample_data):
     # Belongs to case: Test all code that creates input features

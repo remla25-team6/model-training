@@ -183,3 +183,9 @@ data/
 
 # Google Cloud Storage Keyfile
 keyfile.json
+
+# Vscode
+.vscode/
+
+# pytest benchmarks
+.benchmarks/
