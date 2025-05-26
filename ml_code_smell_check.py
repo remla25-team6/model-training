@@ -1,9 +1,7 @@
 from pylint.checkers import BaseChecker
-from pylint.interfaces import IAstroidChecker
 import astroid
 
 class MLCodeSmellChecker(BaseChecker):
-    __implements__ = IAstroidChecker
 
     name = "ml-code-smell-checker"
     msgs = {

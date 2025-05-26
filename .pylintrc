@@ -1,6 +1,5 @@
 [MASTER]
-# Ignore migrations or tests if you want
-ignore=migrations,test
+ignore=test
 
 [MESSAGES CONTROL]
 # Disable some common noisy warnings
@@ -14,7 +13,7 @@ output-format=colorized
 reports=no
 
 [TYPECHECK]
-ignored-modules=numpy,pandas  # Example for ML projects
+ignored-modules=numpy,pandas 
 
 [SIMILARITIES]
 min-similarity-lines=4
