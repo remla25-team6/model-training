@@ -1,3 +1,12 @@
+"""
+This module defines a custom Pylint checker for detecting common code smells in machine learning code, particularly with Pandas and NumPy usage.
+It checks for:
+1. Unnecessary iteration over Pandas DataFrame rows.
+2. Chain indexing in Pandas.
+3. Misuse of DataFrame to ndarray conversion.
+4. Misuse of matrix multiplication functions in NumPy.
+"""
+
 from pylint.checkers import BaseChecker
 import astroid
 

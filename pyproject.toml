@@ -18,3 +18,13 @@ dependencies = [
 
 [tool.setuptools]
 packages = { find = { where = ["model-training"] } }
+
+[tool.black]
+line-length = 88
+exclude = '''
+/(
+  | \.git
+  | \.github
+  | test
+)/
+'''
