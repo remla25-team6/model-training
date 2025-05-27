@@ -50,7 +50,7 @@ jobs:
     - name: Run Pylint
       id: pylint
       run: |
-        PYTHONPATH-. pylint model-training --output-format=text | tee pylint-output.txt || true
+        PYTHONPATH=. pylint model-training --output-format=text | tee pylint-output.txt || true
         
         PYLINT_SCORE=$(grep -oP 'Your code has been rated at \K[0-9]+' pylint-output.txt || echo "0.0")
         echo "PYLINT_SCORE=$PYLINT_SCORE" >> $GITHUB_ENV
