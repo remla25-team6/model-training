@@ -21,10 +21,20 @@ jobs:
             
     - name: Setup dvc
       uses: iterative/setup-dvc@v1
+      with:
+        version: '3.59.2'
+      continue-on-error: true
+    
+    - name: Manual dvc installation if failed
+      if: failure()
+      run: |
+        echo "Github action to install dvc failed. Installing via pip"
+        pip install dvc[gs] 
+
 
     - name: Setup dvc-gs credentials
       run: |
-        echo '${{ secrets.GSKEYFILE }}' > /tmp/keyfile.json
+        echo '${{ secrets.GSKEYFILE }}' > /tmp/keyfile.jsonyy
 
     - name: dvc-pull data
       env: 
