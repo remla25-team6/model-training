@@ -23,3 +23,8 @@ astroid==3.3.10
 
 # Code formatting
 black==25.1.0
+
+#CI/CD
+pytest-cov==6.1.1
+coverage_badge==1.1.2
+anybadge==1.16.0
