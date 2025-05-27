@@ -33,12 +33,14 @@ jobs:
 
 
     - name: Setup dvc-gs credentials
+      env: 
+        SERVICE_ACCOUNT_SECRET: ${{ secrets.GSKEYFILE }}
       run: |
-        echo '${{ secrets.GSKEYFILE }}' > /tmp/keyfile.jsonyy
+        echo "$SERVICE_ACCOUNT_SECRET" > keyfile.json
 
     - name: dvc-pull data
       env: 
-        GOOGLE_APPLICATION_CREDENTIALS: /tmp/keyfile.json
+        GOOGLE_APPLICATION_CREDENTIALS: keyfile.json
       run: |
         dvc pull
 
