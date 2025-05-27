@@ -49,7 +49,7 @@ jobs:
         echo "PYLINT_SCORE=$PYLINT_SCORE" >> $GITHUB_ENV
         echo "::set-output name=score::$PYLINT_SCORE"
 
-        anybadge --label=pylint --value=$PYLINT_SCORE --suffix=/10 --file=.github/badges/pylint.svg \
+        anybadge --label=pylint --value=$PYLINT_SCORE --overwrite --suffix=/10 --file=.github/badges/pylint.svg \
           10=red 6=orange 8=yellow 10=green
     
     - name: Run tests with coverage
@@ -61,7 +61,7 @@ jobs:
         echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
         echo "::set-output name=coverage::$COVERAGE"
         
-        anybadge --label=coverage --value=$COVERAGE --suffix=% --file=.github/badges/coverage.svg \
+        anybadge --label=coverage --value=$COVERAGE --overwrite --suffix=% --file=.github/badges/coverage.svg \
           50=red 60=orange 80=yellow 100=green
         
     - name: Upload pylint artifact
