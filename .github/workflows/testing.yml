@@ -1,0 +1,85 @@
+name: Test and Quality metrics
+
+on: [push]
+
+jobs:
+  run-and-collect-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        cache: 'pip'
+    
+    - name: Setup dvc
+      uses: iterative/setup-dvc@v1
+      with:
+        version: '3.59.2'
+      continue-on-error: true
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r dev-requirements.txt
+            
+    - name: Setup dvc-gs credentials
+      env: 
+        SERVICE_ACCOUNT_SECRET: ${{ secrets.GSKEYFILE }}
+      run: |
+        echo "$SERVICE_ACCOUNT_SECRET" > keyfile.json
+
+    - name: dvc-pull data
+      env: 
+        GOOGLE_APPLICATION_CREDENTIALS: keyfile.json
+      run: |
+        dvc pull
+
+    - name: Create badges directory
+      run: mkdir -p .github/badges
+
+    - name: Run Pylint
+      id: pylint
+      run: |
+        PYTHONPATH=. pylint model-training --rcfile=.pylintrc --output-format=text | tee pylint-output.txt || true
+        
+        PYLINT_SCORE=$(grep -oP 'Your code has been rated at \K[0-9]+' pylint-output.txt || echo "0.0")
+        echo "PYLINT_SCORE=$PYLINT_SCORE" >> $GITHUB_ENV
+        echo "::set-output name=score::$PYLINT_SCORE"
+
+        anybadge --label=pylint --value=$PYLINT_SCORE --overwrite --suffix=/10 --file=.github/badges/pylint.svg \
+          10=red 6=orange 8=yellow 10=green
+    
+    - name: Run tests with coverage
+      id: pytest
+      run: |
+        pytest --cov=. --cov-report=xml --cov-report=term --cov-report=html --junit-xml=pytest-report.xml || true
+        
+        COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(round(float(root.attrib['line-rate']) * 100, 2))")
+        echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+        echo "::set-output name=coverage::$COVERAGE"
+        
+        anybadge --label=coverage --value=$COVERAGE --overwrite --suffix=% --file=.github/badges/coverage.svg \
+          50=red 60=orange 80=yellow 100=green
+        
+    - name: Upload pylint artifact
+      uses: actions/upload-artifact@v4
+      with: 
+          name: lint-score
+          path: .github/badges/pylint.svg
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v4
+      with:
+          name: test-coverage
+          path: .github/badges/coverage.svg
+
+    - name: Commit and push badges
+      if: github.event_name == 'push'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add .github/badges/*.svg
+        git diff --staged --quiet || git commit -m "Updated badges [skip CI]"
+        git push

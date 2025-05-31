@@ -1,4 +1,7 @@
 # model-training
+![Pylint Score](.github/badges/pylint.svg)
+![Test Coverage](.github/badges/coverage.svg)
+
 This repository contains the machine learning training pipeline for a sentiment classification model based on restaurant reviews. It is inspired by the GitHub repository: [proksch/restaurant-sentiment](https://github.com/proksch/restaurant-sentiment).
 
 The training pipeline performs the following steps:
