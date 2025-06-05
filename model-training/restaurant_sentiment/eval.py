@@ -1,7 +1,14 @@
 import os
 import argparse
 import json
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    cohen_kappa_score
+)
 from joblib import load
 
 
@@ -16,13 +23,35 @@ def evaluate(data_path = "data", model_path ="model"):
     # Evaluate model performance
     cm = confusion_matrix(y_test, y_pred)
     acc = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+    recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+    f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+    kappa = cohen_kappa_score(y_test, y_pred)
+    n_samples = len(y_test)
 
+    metrics = {
+        "test_accuracy": acc,
+        "test_precision": precision,
+        "test_recall": recall,
+        "test_f1_score": f1,
+        "test_cohens_kappa": kappa,
+        "test_samples": n_samples,
+        "confusion_matrix": cm.tolist()
+    }
+
+    # Dump to json
     with open(os.path.join(model_path, "metrics.json"), "w") as f:
-        json.dump({"test_accuracy": acc}, f)
-
+        json.dump(metrics, f, indent=4)
+    
+    # Output to console
     print("Confusion Matrix:")
     print(cm)
     print(f"Accuracy: {acc}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+    print(f"Cohen's Kappa: {kappa:.4f}")
+    print(f"Test Samples: {n_samples}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
