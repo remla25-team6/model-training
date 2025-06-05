@@ -59,29 +59,3 @@ jobs:
           file: model/model.pkl
           asset_name: model-v${{ env.version }}.pkl
           tag: v${{ env.version }}
-      
-      - name: Calculate pre-release version
-        run: |
-          VERSION=${version}
-          MAJOR=$(echo "$VERSION" | cut -d . -f 1)
-          MINOR=$(echo "$VERSION" | cut -d . -f 2)
-          PATCH=$(echo "$VERSION" | cut -d . -f 3)
-          PATCH=$((PATCH + 1))
-          DATETIME=$(date +%Y%m%d.%H%M%S)
-          PRE_RELEASE_VERSION="$MAJOR.$MINOR.$PATCH-pre.$DATETIME"
-          echo "pre_release_version=$PRE_RELEASE_VERSION"  >> $GITHUB_ENV
-
-      - name: Tag next pre-release version on main
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git checkout main
-          git tag v${{ env.pre_release_version }}
-          git push origin v${{ env.pre_release_version }}
-
-      - name: Trigger pre-release workflow
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: trigger-pre-release

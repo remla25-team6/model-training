@@ -4,11 +4,7 @@ on:
   push:
     branches:
         main
-    tags-ignore:
-      - '**'
-  
-  repository_dispatch:
-    types: [trigger-pre-release]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 env:
   PYTHON_VERSION: '3.12.3'
@@ -39,24 +35,24 @@ jobs:
       - name: Determine trigger type
         id: trigger
         run: |
-          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
-            echo "triggered_by=release" >> $GITHUB_OUTPUT
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "triggered_by=tag" >> $GITHUB_OUTPUT
           else
-            echo "triggered_by=push" >> $GITHUB_OUTPUT
+            echo "triggered_by=branch" >> $GITHUB_OUTPUT
 
-      - name: Get latest tag
+      - name: Get latest tag from history
+        if: steps.trigger.outputs.triggered_by == 'branch'
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
-      
-      - name: Parse version from latest tag (if triggered by release)
-        if: steps.trigger.outputs.triggered_by == 'release'
+
+      - name: Get latest tag from pushed tag
+        if: steps.trigger.outputs.triggered_by == 'tag'
         run: |
-          VERSION=${latest_tag#v}
-          echo "version=$VERSION" >> $GITHUB_ENV
+          LATEST_TAG=${GITHUB_REF:11}
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
 
       - name: Calculate pre-release version
-        if: steps.trigger.outputs.triggered_by == 'push'
         run: |
           VERSION=${latest_tag#v}
           MAJOR=$(echo "$VERSION" | cut -d . -f 1)
@@ -77,11 +73,12 @@ jobs:
         run: python model-training/restaurant_sentiment/train.py
 
       - name: Tag pre-release commit
-        if: steps.trigger.outputs.triggered_by == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag v${{ env.version }}
+          git fetch origin main
+          MAIN_SHA=$(git rev-parse origin/main)
+          git tag v${{ env.version }} $MAIN_SHA
           git push origin v${{ env.version }}
 
       - name: Create GitHub pre-release
