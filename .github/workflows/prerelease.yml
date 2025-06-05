@@ -4,8 +4,8 @@ on:
   push:
     branches:
         main
-    tags-ignore:
-      - '**'
+    tags:
+      - 'v*-pre.*'
 
 env:
   PYTHON_VERSION: '3.12.3'
@@ -33,12 +33,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
+      - name: Determine trigger type
+        id: trig
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "triggered_by=tag" >> $GITHUB_OUTPUT
+          else
+            echo "triggered_by=branch" >> $GITHUB_OUTPUT
+
       - name: Get latest tag
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
+      
+      - name: Parse version from tag (if triggered by tag)
+        if: steps.trig.outputs.triggered_by == 'tag'
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Calculate pre-release version
+        if: steps.trig.outputs.triggered_by == 'branch'
         run: |
           VERSION=${latest_tag#v}
           MAJOR=$(echo "$VERSION" | cut -d . -f 1)
@@ -59,6 +74,7 @@ jobs:
         run: python model-training/restaurant_sentiment/train.py
 
       - name: Tag pre-release commit
+        if: steps.trig.outputs.triggered_by == 'branch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
