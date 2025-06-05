@@ -1,6 +1,9 @@
 name: Test and Quality metrics
 
-on: [push]
+on:
+  push:
+    branches:
+      - '**' 
 
 jobs:
   run-and-collect-tests:
