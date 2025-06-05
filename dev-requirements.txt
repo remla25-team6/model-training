@@ -2,7 +2,7 @@ joblib==1.4.2
 pandas==2.2.3
 scikit-learn==1.6.1
 requests==2.32.3
-git+https://github.com/remla25-team6/lib-ml.git@v0.1.0
+git+https://github.com/remla25-team6/lib-ml.git@v0.2.0
 
 # Extra non-production requirements
 jupyter==1.1.1
