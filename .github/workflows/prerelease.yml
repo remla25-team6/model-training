@@ -4,8 +4,13 @@ on:
   push:
     branches:
         main
-    tags:
-      - 'v*-pre.*'
+    tags-ignore:
+      - '**'
+  
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
 
 env:
   PYTHON_VERSION: '3.12.3'
@@ -34,12 +39,12 @@ jobs:
           pip install .
 
       - name: Determine trigger type
-        id: trig
+        id: trigger
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "triggered_by=tag" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" == "workflow_run" ] && [ "${{ github.event.workflow }}" == "Release" ]; then
+            echo "triggered_by=release" >> $GITHUB_OUTPUT
           else
-            echo "triggered_by=branch" >> $GITHUB_OUTPUT
+            echo "triggered_by=push" >> $GITHUB_OUTPUT
 
       - name: Get latest tag
         run: |
@@ -47,13 +52,13 @@ jobs:
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
       
       - name: Parse version from tag (if triggered by tag)
-        if: steps.trig.outputs.triggered_by == 'tag'
+        if: steps.trigger.outputs.triggered_by == 'release'
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Calculate pre-release version
-        if: steps.trig.outputs.triggered_by == 'branch'
+        if: steps.trigger.outputs.triggered_by == 'push'
         run: |
           VERSION=${latest_tag#v}
           MAJOR=$(echo "$VERSION" | cut -d . -f 1)
@@ -74,7 +79,7 @@ jobs:
         run: python model-training/restaurant_sentiment/train.py
 
       - name: Tag pre-release commit
-        if: steps.trig.outputs.triggered_by == 'branch'
+        if: steps.trigger.outputs.triggered_by == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
