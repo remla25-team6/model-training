@@ -39,6 +39,7 @@ jobs:
             echo "triggered_by=tag" >> $GITHUB_OUTPUT
           else
             echo "triggered_by=branch" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get latest tag from history
         if: steps.trigger.outputs.triggered_by == 'branch'
