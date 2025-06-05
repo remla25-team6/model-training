@@ -7,10 +7,8 @@ on:
     tags-ignore:
       - '**'
   
-  workflow_run:
-    workflows: ["Release"]
-    types:
-      - completed
+  repository_dispatch:
+    types: [trigger-pre-release]
 
 env:
   PYTHON_VERSION: '3.12.3'
@@ -41,7 +39,7 @@ jobs:
       - name: Determine trigger type
         id: trigger
         run: |
-          if [ "${{ github.event_name }}" == "workflow_run" ] && [ "${{ github.event.workflow }}" == "Release" ]; then
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
             echo "triggered_by=release" >> $GITHUB_OUTPUT
           else
             echo "triggered_by=push" >> $GITHUB_OUTPUT
@@ -51,10 +49,10 @@ jobs:
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
       
-      - name: Parse version from tag (if triggered by tag)
+      - name: Parse version from latest tag (if triggered by release)
         if: steps.trigger.outputs.triggered_by == 'release'
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${latest_tag#v}
           echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Calculate pre-release version
