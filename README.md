@@ -136,5 +136,30 @@ To add new users to the project:
     - `Storage Object Admin` (read/write)
 5. Click Save.
 
+## Code Quality & Linting
+### Run Checks Locally
+From the project root, run:
+```bash
+# Pylint
+pylint --rcfile=.pylintrc <target-directory>
+
+# Flake8
+flake8 .
+
+# Bandit
+bandit -r .
+
+# Black formatter
+black .
+```
+
+### Tools Used
+| Tool     | Purpose                              | Config File        |
+| -------- | ------------------------------------ | ------------------ |
+| `pylint` | Detect code smells, logic issues     | `.pylintrc`        |
+| `flake8` | Enforce style conventions            | `.flake8`          |
+| `bandit` | Detect common security issues        | `.bandit`          |
+| `black`  | Auto-format code to consistent style | default            |
+
 ## AI Disclaimer
 This documented was refined using ChatGPT 4o.

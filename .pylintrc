@@ -1,13 +1,26 @@
 [MASTER]
-ignore=test
-load-plugins=pylint_plugins.ml_code_smell_check
+ignore=test,venv,__pycache__,data
+load-plugins=ml_code_smell_check
+init-hook='import sys; sys.path.append("./pylint_plugins")'
 
 [MESSAGES CONTROL]
 # Disable some common noisy warnings
-disable=C0114,C0115,C0116  # missing docstring stuff
+disable=
+    C0114,
+    C0115,
+    C0116, # Missing docstring constraints
+    W0718, # Catching too general exception
+    W1514, # Using open without explicitly specifying an encoding
+    W0621 # Redefining name from outer scope
 
 [FORMAT]
 max-line-length=88
+
+[VARIABLES]
+good-names=X,X_test,X_train,X_slice,X_raw
+
+[IMPORTS]
+known-standard-library=subprocess,shutil,time,pathlib,os,argparse
 
 [REPORTS]
 output-format=colorized

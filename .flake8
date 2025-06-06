@@ -1,4 +1,15 @@
 [flake8]
 max-line-length = 88
-exclude = .git,__pycache__,migrations,tests
-ignore = E203, W503  # whitespace-related warnings, common to ignore for black compatibility
+exclude = 
+    .git,
+    __pycache__,
+    migrations,
+    tests
+
+# Whitespace-related warnings, common to ignore for black compatibility
+ignore = 
+    E203, 
+    W503
+
+# Count total issues at end
+count = true

@@ -49,7 +49,9 @@ def current_memory() -> int:
 @pytest.mark.benchmark(group="inference")
 def test_inference_latency_and_leak(trained, benchmark):
     model, data_dir = trained
-    X = shuffle(load(data_dir / "X_test.pkl"), random_state=0)[:N_PRED]  # samples for inference
+    X = shuffle(load(data_dir / "X_test.pkl"), random_state=0)[
+        :N_PRED
+    ]  # samples for inference
 
     benchmark(model.predict, X)
     mean_batch = benchmark.stats.stats.mean  # avg seconds per batch

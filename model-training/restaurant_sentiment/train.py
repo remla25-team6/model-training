@@ -8,21 +8,30 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
-def train(data_path = "data", model_path = "model", max_features=1420, test_size=0.20, random_state=0):
+
+def train(
+    data_path="data",
+    model_path="model",
+    max_features=1420,
+    test_size=0.20,
+    random_state=0,
+):
     """
     Loads data, vectorizes text using Bag-of-Words, and trains a Naive Bayes classifier.
-    
+
     Parameters:
     - filepath: str, path to the TSV dataset file.
     - max_features: int, number of features for CountVectorizer (default 1420).
     - test_size: float, proportion of dataset to include in test split (default 0.20).
     - random_state: int, random seed for reproducibility (default 0).
-    
+
     Returns:
     - None
     """
     print("Loading data...")
-    X_raw, y = load(os.path.join(data_path, 'corpus.pkl')), load(os.path.join(data_path, 'labels.pkl'))
+    X_raw, y = load(os.path.join(data_path, "corpus.pkl")), load(
+        os.path.join(data_path, "labels.pkl")
+    )
 
     # Convert text data to feature vectors using CountVectorizer
     print("Vectorizing text...")
@@ -31,7 +40,9 @@ def train(data_path = "data", model_path = "model", max_features=1420, test_size
 
     # Split data into training and testing sets
     print("Splitting data into train and test sets...")
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
 
     # Train the Gaussian Naive Bayes classifier
     print("Training Naive Bayes classifier...")
@@ -54,17 +65,15 @@ def train(data_path = "data", model_path = "model", max_features=1420, test_size
     # Dump the train and test splits for the evaluation step
     os.makedirs(data_path, exist_ok=True)
 
-    dump(X_train, os.path.join(data_path, 'X_train.pkl'))
-    dump(X_test, os.path.join(data_path, 'X_test.pkl'))
-    dump(y_train, os.path.join(data_path, 'y_train.pkl'))
-    dump(y_test, os.path.join(data_path, 'y_test.pkl'))
+    dump(X_train, os.path.join(data_path, "X_train.pkl"))
+    dump(X_test, os.path.join(data_path, "X_test.pkl"))
+    dump(y_train, os.path.join(data_path, "y_train.pkl"))
+    dump(y_test, os.path.join(data_path, "y_test.pkl"))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--data",
-        default="data"
-    )
+    parser.add_argument("--data", default="data")
     args = parser.parse_args()
 
     train(data_path=args.data)
