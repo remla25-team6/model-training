@@ -1,5 +1,16 @@
 # Bandit config
 skips: ["B101"]  # Skip assert usage warning, for example
+
 exclude_dirs:
   - tests
   - migrations
+
+severity:
+  - LOW
+  - MEDIUM
+  - HIGH
+
+confidence:
+  - LOW
+  - MEDIUM
+  - HIGH
