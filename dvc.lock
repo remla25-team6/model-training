@@ -85,8 +85,8 @@ stages:
       size: 1665
     - path: model-training/restaurant_sentiment/eval.py
       hash: md5
-      md5: a67accfaf4e3e758c8fe385c7b0626a8
-      size: 1059
+      md5: e1faca072371bbca0f6b9c6c72661dd5
+      size: 1949
     - path: model/model.pkl
       hash: md5
       md5: 7dc6aed243ae2e83d0af2e966804ad5f
@@ -94,5 +94,5 @@ stages:
     outs:
     - path: model/metrics.json
       hash: md5
-      md5: c1952ff22d65ebabfc4a91985f26d80b
-      size: 37
+      md5: 601628fbf6ab87a059c823ef9e0038ce
+      size: 372

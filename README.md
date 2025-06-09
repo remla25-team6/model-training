@@ -98,16 +98,53 @@ You can find commit hashes from:
 dvc exp show
 ```
 
+### Run and Compare Experiments
+You can create and track experiments using DVC's experiment tools:
+```bash
+# Run an xxperiment
+dvc exp run
+
+# Test a different parameter (e.g., random state)
+# # See params.yaml for all configurable parameters
+dvc exp run --set-param train.random_state=20
+
+# Show all experiments
+dvc exp show
+```
+
 ### Metrics Tracking
 The `model/metrics.json` file includes:
 - `test_accuracy`
-Compare experiments using:
+- `test_precision`
+- `test_recall`
+- `test_f1_score`
+- `test_cohens_kappa`
+- `test_samples`
+You can compare metrics from different experiments using DVC's experiment and metrics tools:
 ```bash
+# Compare experiments
 dvc exp show
-```
-You can also compare metric changes:
-```bash
+
+# Compare specific experiments 
+dvc exp diff <exp1> <exp2>
+
+# Compare metric differences
 dvc metrics diff
+```
+
+### Push to Remote
+To share data and metrics to remote, after running or reproducing the pipeline:
+```bash
+dvc push
+```
+To share experiments:
+```bash
+dvc exp push origin <exp_id>
+```
+To apply the best experiment:
+```bash
+dvc exp apply <exp_id>
+git commit -am "<commit_message>"
 ```
 
 ## Google Cloud Storage Access Setup
