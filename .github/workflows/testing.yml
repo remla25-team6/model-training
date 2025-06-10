@@ -70,6 +70,14 @@ jobs:
         
         anybadge --label=coverage --value=$COVERAGE --overwrite --suffix=% --file=.github/badges/coverage.svg \
           50=red 60=orange 80=yellow 100=green
+
+    - name: Calculate ML test score
+      id: ml_test_score
+      run: |
+        SCORE=$(python scripts/calculate_ml_test_score.py)
+        echo "ML test score: $SCORE"
+        anybadge --label=ml-test-score --value=$SCORE --overwrite --file=.github/badges/ml-test-score.svg \
+            0=red 1=orangered 2=orange 3=yellowgreen 5=green
         
     - name: Upload pylint artifact
       uses: actions/upload-artifact@v4
@@ -81,6 +89,11 @@ jobs:
       with:
           name: test-coverage
           path: .github/badges/coverage.svg
+    - name: Upload ML score artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ml-test-score
+        path: .github/badges/ml-test-score.svg
 
     - name: Commit and push badges
       if: github.event_name == 'push'

@@ -38,7 +38,7 @@ def baseline_accuracy(data_dir, tmp_path_factory):
 
 
 @pytest.mark.parametrize("seed", [1, 2, 3])
-def test_accuracy_stability(data_dir, baseline_accuracy, tmp_path, seed):
+def test_infra_1_accuracy_stability(data_dir, baseline_accuracy, tmp_path, seed):
     model_dir = tmp_path / f"model_seed_{seed}"
     train(data_path=data_dir, model_path=str(model_dir), random_state=seed)
     model = load(os.path.join(model_dir, "model.pkl"))

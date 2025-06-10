@@ -69,7 +69,7 @@ def test_inference_latency_and_leak(trained, benchmark):
 
 # training speed + peak memory
 @pytest.mark.benchmark(group="training")
-def test_training_speed_and_ram(data_dir, tmp_path, benchmark):
+def test_monitor_6_training_speed_and_ram(data_dir, tmp_path, benchmark):
     rss_inc: dict[str, int] = {}
 
     def _train() -> float:

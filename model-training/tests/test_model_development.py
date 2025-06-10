@@ -29,7 +29,7 @@ def data_slices():
     }
 
 
-def test_model_quality_on_slices(load_data, data_slices):
+def test_model_6_model_quality_on_slices(load_data, data_slices):
     # Belongs to case: Test model quality on important data slices
     tmp_path = load_data
     train(
