@@ -8,7 +8,7 @@ from restaurant_sentiment.preprocess import main
 
 
 @pytest.fixture
-def model_and_data(tmp_path):
+def load_data(tmp_path):
     url = "https://raw.githubusercontent.com/proksch/restaurant-sentiment/" \
     "main/a1_RestaurantReviews_HistoricDump.tsv"
     download_dataset(
@@ -18,15 +18,7 @@ def model_and_data(tmp_path):
         data_path=os.path.join(tmp_path, "data"),
         filepath=os.path.join(tmp_path, "data/RestaurantReviews_HistoricDump.tsv"),
     )
-    train(
-        data_path=os.path.join(tmp_path, "data"),
-        model_path=os.path.join(tmp_path, "model"),
-    )
-    model = load(os.path.join(tmp_path, "model/model.pkl"))
-    bow = load(os.path.join(tmp_path, "model/bow.pkl"))
-    X_test = load(os.path.join(tmp_path, "data/X_test.pkl"))
-    y_test = load(os.path.join(tmp_path, "data/y_test.pkl"))
-    return model, bow, X_test, y_test
+    return tmp_path
 
 
 @pytest.fixture
@@ -37,9 +29,16 @@ def data_slices():
     }
 
 
-def test_model_quality_on_slices(model_and_data, data_slices):
+def test_model_quality_on_slices(load_data, data_slices):
     # Belongs to case: Test model quality on important data slices
-    model, _, X_test, y_test = model_and_data
+    tmp_path = load_data
+    train(
+        data_path=os.path.join(tmp_path, "data"),
+        model_path=os.path.join(tmp_path, "model"),
+    )
+    model = load(os.path.join(tmp_path, "model/model.pkl"))
+    X_test = load(os.path.join(tmp_path, "data/X_test.pkl"))
+    y_test = load(os.path.join(tmp_path, "data/y_test.pkl"))
 
     for slice_name, slice_fn in data_slices.items():
         X_slice, y_slice = slice_fn(X_test, y_test)
@@ -51,3 +50,28 @@ def test_model_quality_on_slices(model_and_data, data_slices):
         assert (
             accuracy > 0.5
         ), f"Model accuracy on {slice_name} is below threshold: {accuracy}"
+
+def test_non_determinism_robustness(load_data, data_slices, tolerance = 0.05):
+    # Test for non-determinism robustness exist and use data slices to test model capabilities.
+    tmp_path = load_data
+    random_states = [0,1,2]
+    accuracies = {slice_name: [] for slice_name, slice_fn in data_slices.items()}
+    for random_state in random_states:
+        train(
+            data_path=os.path.join(tmp_path, "data"),
+            model_path=os.path.join(tmp_path, f"model{random_state}"),
+        )
+        model = load(os.path.join(tmp_path, f"model{random_state}/model.pkl"))
+        X_test = load(os.path.join(tmp_path, "data/X_test.pkl"))
+        y_test = load(os.path.join(tmp_path, "data/y_test.pkl"))
+        for slice_name, slice_fn in data_slices.items():
+            X_slice, y_slice = slice_fn(X_test, y_test)
+            y_pred = model.predict(X_slice)
+            accuracy = accuracy_score(y_slice, y_pred)
+            accuracies[slice_name].append(accuracy)
+    for slice_name, _ in data_slices.items():
+        mean_acc = sum(accuracies[slice_name]) / len(accuracies[slice_name])
+        for acc in accuracies[slice_name]:
+            assert (
+                abs(acc - mean_acc) <= tolerance
+            ), f"Accuracy {acc} deviates from mean accuracy {mean_acc} by more than {tolerance} in slice: {slice_name}"
