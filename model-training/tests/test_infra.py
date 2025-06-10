@@ -36,9 +36,13 @@ def baseline_accuracy(data_dir, tmp_path_factory):
     y_test = load(os.path.join(data_dir, "y_test.pkl"))
     return accuracy_score(y_test, model.predict(X_test))
 
-
-@pytest.mark.parametrize("seed", [1, 2, 3])
-def test_accuracy_stability(data_dir, baseline_accuracy, tmp_path, seed):
+# Testing different models with different seeds
+@pytest.mark.parametrize(
+    "seed",
+    [1, 2, 3],
+    ids=["seed 1", "seed 2", "seed 3"],
+)
+def test_infra_1_model_accuracy_stability(data_dir, baseline_accuracy, tmp_path, seed):
     model_dir = tmp_path / f"model_seed_{seed}"
     train(data_path=data_dir, model_path=str(model_dir), random_state=seed)
     model = load(os.path.join(model_dir, "model.pkl"))
@@ -83,7 +87,7 @@ def repo_clone(tmp_path_factory):
     shutil.which("git") is None or shutil.which("dvc") is None,
     reason="Git and/or DVC not available",
 )
-def test_repo_rollback_speed_and_accuracy(repo_clone):
+def test_infra_2_repo_rollback_speed_and_accuracy(repo_clone):
     repo = repo_clone
 
     # measure HEAD accuracy

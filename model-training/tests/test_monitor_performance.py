@@ -47,7 +47,7 @@ def current_memory() -> int:
 
 # inference latency + memory leak
 @pytest.mark.benchmark(group="inference")
-def test_inference_latency_and_leak(trained, benchmark):
+def test_monitor_1_inference_latency_and_leak(trained, benchmark):
     model, data_dir = trained
     X = shuffle(load(data_dir / "X_test.pkl"), random_state=0)[
         :N_PRED
@@ -69,7 +69,7 @@ def test_inference_latency_and_leak(trained, benchmark):
 
 # training speed + peak memory
 @pytest.mark.benchmark(group="training")
-def test_training_speed_and_ram(data_dir, tmp_path, benchmark):
+def test_monitor_2_training_speed_and_ram(data_dir, tmp_path, benchmark):
     rss_inc: dict[str, int] = {}
 
     def _train() -> float:
