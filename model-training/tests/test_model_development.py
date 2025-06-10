@@ -29,7 +29,7 @@ def data_slices():
     }
 
 
-def test_model_6_model_quality_on_slices(load_data, data_slices):
+def test_model_1_model_quality_on_slices(load_data, data_slices):
     # Belongs to case: Test model quality on important data slices
     tmp_path = load_data
     train(
@@ -51,7 +51,7 @@ def test_model_6_model_quality_on_slices(load_data, data_slices):
             accuracy > 0.5
         ), f"Model accuracy on {slice_name} is below threshold: {accuracy}"
 
-def test_non_determinism_robustness(load_data, data_slices, tolerance = 0.05):
+def test_model_2_non_determinism_robustness(load_data, data_slices, tolerance = 0.05):
     # Test for non-determinism robustness exist and use data slices to test model capabilities.
     tmp_path = load_data
     random_states = [0,1,2]

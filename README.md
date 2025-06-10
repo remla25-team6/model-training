@@ -199,12 +199,28 @@ black .
 | `bandit` | Detect common security issues        | `.bandit`          |
 | `black`  | Auto-format code to consistent style | default            |
 
-## Automated Tests (for Developers)
+## Automated Tests (important for Developers)
+
+### ML Test Score Naming Requirement
 To automatically calculate the ML Test Score from the following [paper](https://storage.googleapis.com/gweb-research2023-media/pubtools/4156.pdf), new test cases that fall under one of the categories from the paper should follow the naming convention below.
 
 `test_{category_name}_{case_number}_{your_arbitrary_test_case_name}`
 
 The `category_name` may be one of `["data", "model", "infra", "monitor"]`. An example test case name is `test_model_6_model_quality_on_slices`, which corresponds to the test case from the paper: "Model 6: Model quality is sufficient on all important
 data slices".
+
+### Manual Execution of Tests
+To manually execute the tests you can do the following from the project root:
+
+- For the normal testing suite with coverage:
+```bash
+pytest -v --cov=.
+```
+
+- For the ML Test Score:
+```bash
+python scripts/calculate_ml_test_score.py
+```
+
 ## AI Disclaimer
 This documented was refined using ChatGPT 4o.
