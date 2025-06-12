@@ -8,7 +8,7 @@ from joblib import load, dump
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 
 
 def train(
@@ -48,9 +48,9 @@ def train(
         X, y, test_size=test_size, random_state=random_state
     )
 
-    # Train the Gaussian Naive Bayes classifier
-    print("Training Naive Bayes classifier...")
-    model = RandomForestClassifier()
+    # Train the SVC
+    print("Training SVC...")
+    model = SVC()
     model.fit(X_train, y_train)
 
     # Create 'model' directory if it does not exist
