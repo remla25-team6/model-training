@@ -3,22 +3,12 @@ import pytest
 from sklearn.metrics import accuracy_score
 from joblib import load
 from restaurant_sentiment.train import train
-from restaurant_sentiment.get_data import download_dataset
-from restaurant_sentiment.preprocess import main
+from tests.utils import load_sample_data
 
 
 @pytest.fixture
 def load_data(tmp_path):
-    url = "https://raw.githubusercontent.com/proksch/restaurant-sentiment/" \
-    "main/a1_RestaurantReviews_HistoricDump.tsv"
-    download_dataset(
-        url, os.path.join(tmp_path, "data/RestaurantReviews_HistoricDump.tsv")
-    )
-    main(
-        data_path=os.path.join(tmp_path, "data"),
-        filepath=os.path.join(tmp_path, "data/RestaurantReviews_HistoricDump.tsv"),
-    )
-    return tmp_path
+    return load_sample_data(tmp_path)
 
 
 @pytest.fixture
@@ -51,27 +41,40 @@ def test_model_1_model_quality_on_slices(load_data, data_slices):
             accuracy > 0.5
         ), f"Model accuracy on {slice_name} is below threshold: {accuracy}"
 
-def test_model_2_non_determinism_robustness(load_data, data_slices, tolerance = 0.05):
-    # Test for non-determinism robustness exist and use data slices to test model capabilities.
+
+def test_model_2_non_determinism_robustness(load_data, data_slices, tolerance=0.05):
     tmp_path = load_data
-    random_states = [0,1,2]
-    accuracies = {slice_name: [] for slice_name, slice_fn in data_slices.items()}
-    for random_state in random_states:
+    accuracies = {name: [] for name in data_slices}
+
+    for seed in [0, 1, 2]:
+        model_path = os.path.join(tmp_path, f"model{seed}")
         train(
             data_path=os.path.join(tmp_path, "data"),
-            model_path=os.path.join(tmp_path, f"model{random_state}"),
+            model_path=model_path,
         )
-        model = load(os.path.join(tmp_path, f"model{random_state}/model.pkl"))
+        model = load(os.path.join(model_path, "model.pkl"))
         X_test = load(os.path.join(tmp_path, "data/X_test.pkl"))
         y_test = load(os.path.join(tmp_path, "data/y_test.pkl"))
-        for slice_name, slice_fn in data_slices.items():
-            X_slice, y_slice = slice_fn(X_test, y_test)
-            y_pred = model.predict(X_slice)
-            accuracy = accuracy_score(y_slice, y_pred)
-            accuracies[slice_name].append(accuracy)
-    for slice_name, _ in data_slices.items():
-        mean_acc = sum(accuracies[slice_name]) / len(accuracies[slice_name])
-        for acc in accuracies[slice_name]:
+
+        slice_accuracies = evaluate_model_on_slices(model, X_test, y_test, data_slices)
+        for slice_name, acc in slice_accuracies.items():
+            accuracies[slice_name].append(acc)
+
+    for slice_name, accs in accuracies.items():
+        mean_acc = sum(accs) / len(accs)
+        for acc in accs:
             assert (
                 abs(acc - mean_acc) <= tolerance
-            ), f"Accuracy {acc} deviates from mean accuracy {mean_acc} by more than {tolerance} in slice: {slice_name}"
+            ), (
+                f"Accuracy {acc:.3f} deviates from mean accuracy {mean_acc:.3f} "
+                f"by more than {tolerance:.3f} in slice: {slice_name}"
+            )
+
+def evaluate_model_on_slices(model, X_test, y_test, data_slices):
+    slice_accuracies = {}
+    for slice_name, slice_fn in data_slices.items():
+        X_slice, y_slice = slice_fn(X_test, y_test)
+        y_pred = model.predict(X_slice)
+        accuracy = accuracy_score(y_slice, y_pred)
+        slice_accuracies[slice_name] = accuracy
+    return slice_accuracies
