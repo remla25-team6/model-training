@@ -1,50 +1,30 @@
 name: Pre-release
 
 on:
-  push:
-    branches:
-        main
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_run:
+    workflows: ["Test and Quality metrics"]
+    types:
+      - completed
 
 env:
   PYTHON_VERSION: '3.12.3'
 
 jobs:
-  check-tests:
+  check-tag:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     steps:
-      - name: Check test workflow status for this commit
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const tag = process.env.GITHUB_REF.split('/').pop();
-            const { data: tagData } = await github.rest.git.getRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/${tag}`
-            });
-            const commitSha = tagData.object.sha;
-            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 20
-            });
-            const testRun = runs.workflow_runs.find(run =>
-              run.name === 'Test and Quality metrics' && run.head_sha === commitSha
-            );
-            if (!testRun) {
-              core.setFailed('No test workflow run found for this commit.');
-            } else if (testRun.conclusion !== 'success') {
-              core.setFailed(`Test workflow did not succeed (status: ${testRun.conclusion}). Pre-release aborted.`);
-            }
+      - name: Print tag info
+        run: echo "Triggered by tag ${{ github.event.workflow_run.head_branch }}"
 
   train-and-prerelease:
+    needs: check-tag
     runs-on: ubuntu-24.04
-    needs: check-tests
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     permissions:
       contents: write
     env:
-      version: ${{ github.ref_name }}
+      version: ${{ github.event.workflow_run.head_branch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,40 +40,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .
-
-      - name: Determine trigger type
-        id: trigger
-        run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            echo "triggered_by=tag" >> $GITHUB_OUTPUT
-          else
-            echo "triggered_by=branch" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Get latest tag from history
-        if: steps.trigger.outputs.triggered_by == 'branch'
-        run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
-
-      - name: Get latest tag from pushed tag
-        if: steps.trigger.outputs.triggered_by == 'tag'
-        run: |
-          LATEST_TAG=${GITHUB_REF:11}
-          echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
-
-      - name: Calculate pre-release version
-        run: |
-          VERSION=${latest_tag#v}
-          MAJOR=$(echo "$VERSION" | cut -d . -f 1)
-          MINOR=$(echo "$VERSION" | cut -d . -f 2)
-          PATCH=$(echo "$VERSION" | cut -d . -f 3)
-          if [[ "${{ steps.trigger.outputs.triggered_by }}" == "tag" ]]; then
-            PATCH=$((PATCH + 1))
-          fi
-          DATETIME=$(date +%Y%m%d.%H%M%S)
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH-pre.$DATETIME"
-          echo "version=$NEW_VERSION"  >> $GITHUB_ENV
 
       - name: Download dataset
         run: python model-training/restaurant_sentiment/get_data.py
