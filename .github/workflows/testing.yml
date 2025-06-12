@@ -10,6 +10,11 @@ on:
 jobs:
   run-and-collect-tests:
     runs-on: ubuntu-latest
+    outputs:
+      pylint_score: ${{ steps.pylint.outputs.score }}
+      coverage: ${{ steps.pytest.outputs.coverage }}
+      ml_test_score: ${{ steps.ml_test_score.outputs.score }}
+      tests_passed: ${{ steps.pytest.outcome }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -50,56 +55,54 @@ jobs:
     - name: Run Pylint
       id: pylint
       run: |
-        PYTHONPATH=. pylint model-training --rcfile=.pylintrc --output-format=text | tee pylint-output.txt || true
-        
+        PYTHONPATH=. pylint model-training --rcfile=.pylintrc --output-format=text | tee pylint-output.txt
         PYLINT_SCORE=$(grep -oP 'Your code has been rated at \K[0-9]+' pylint-output.txt || echo "0.0")
         echo "PYLINT_SCORE=$PYLINT_SCORE" >> $GITHUB_ENV
-        echo "::set-output name=score::$PYLINT_SCORE"
-
+        echo "score=$PYLINT_SCORE" >> $GITHUB_OUTPUT
         anybadge --label=pylint --value=$PYLINT_SCORE --overwrite --suffix=/10 --file=.github/badges/pylint.svg \
-          10=red 6=orange 8=yellow 10=green
+          3=red 6=orange 8=yellow 10=green
     
     - name: Run tests with coverage
       id: pytest
       run: |
-        pytest --cov=. --cov-report=xml --cov-report=term --cov-report=html --junit-xml=pytest-report.xml || true
-        
+        pytest --cov=. --cov-report=xml --cov-report=term --cov-report=html --junit-xml=pytest-report.xml
         COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(round(float(root.attrib['line-rate']) * 100, 2))")
         echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
-        echo "::set-output name=coverage::$COVERAGE"
-        
+        echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
         anybadge --label=coverage --value=$COVERAGE --overwrite --suffix=% --file=.github/badges/coverage.svg \
           50=red 60=orange 80=yellow 100=green
-
+    
     - name: Calculate ML test score
       id: ml_test_score
       run: |
         SCORE=$(python scripts/calculate_ml_test_score.py)
         echo "ML test score: $SCORE"
+        echo "score=$SCORE" >> $GITHUB_OUTPUT
         anybadge --label=ml-test-score --value=$SCORE --overwrite --file=.github/badges/ml-test-score.svg \
             0=red 1=orangered 2=orange 3=yellowgreen 5=green
-        
-    - name: Upload pylint artifact
-      uses: actions/upload-artifact@v4
-      with: 
-          name: lint-score
-          path: .github/badges/pylint.svg
-    - name: Upload coverage artifact
+    - name: Archive badge artifacts
       uses: actions/upload-artifact@v4
       with:
-          name: test-coverage
-          path: .github/badges/coverage.svg
-    - name: Upload ML score artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ml-test-score
-        path: .github/badges/ml-test-score.svg
+        name: badges
+        path: .github/badges/*.svg
 
-    - name: Commit and push badges
-      if: github.event_name == 'push'
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add .github/badges/*.svg
-        git diff --staged --quiet || git commit -m "Updated badges [skip CI]"
-        git push
+  push-badges:
+    needs: run-and-collect-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Download badge artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: badges
+          path: .github/badges
+      - name: Commit and push badges
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/*.svg
+          git diff --staged --quiet || git commit -m "Updated badges [skip CI]"
+          git push
