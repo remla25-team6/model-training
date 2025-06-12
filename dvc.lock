@@ -5,8 +5,8 @@ stages:
     deps:
     - path: model-training/restaurant_sentiment/get_data.py
       hash: md5
-      md5: c66fdc0bef3b5f99bcea4ab58a87d81b
-      size: 1109
+      md5: 6f0157716c4d9b1b1234173b17f82f71
+      size: 1116
     outs:
     - path: data/RestaurantReviews_HistoricDump.tsv
       hash: md5
@@ -21,8 +21,8 @@ stages:
       size: 54686
     - path: model-training/restaurant_sentiment/preprocess.py
       hash: md5
-      md5: 53f8f0392e5625ab26dfe77b3ce6bbdc
-      size: 1934
+      md5: b993d9a767af06b0cbec5b4dfc30f6d6
+      size: 2119
     outs:
     - path: data/corpus.pkl
       hash: md5
@@ -45,54 +45,54 @@ stages:
       size: 7425
     - path: model-training/restaurant_sentiment/train.py
       hash: md5
-      md5: 6b33f5c4d4c34bfb8559e9491fe0a3f0
-      size: 2491
+      md5: a697aff7e08ac89611100a030cd570fc
+      size: 3762
     outs:
     - path: data/X_test.pkl
       hash: md5
-      md5: 6cb500da31cb15a3cd315bfc5ac9d834
-      size: 2045041
+      md5: ce3aca7e4a2e7be870c99dd913f42cd6
+      size: 2056401
     - path: data/X_train.pkl
       hash: md5
-      md5: 9f022364885be5b6071e274b3a441dc5
-      size: 8179441
+      md5: 50fb3b3827ebef86b96dfead4a5b65a1
+      size: 8213521
     - path: data/y_test.pkl
       hash: md5
-      md5: 2206173e02946f0a2594ab9f80fd8f50
-      size: 1665
+      md5: ccb4faa62eb5d61420109c2a30429417
+      size: 1673
     - path: data/y_train.pkl
       hash: md5
-      md5: 06bd601c1b0d30379a423b5c9bd03bf1
-      size: 5985
+      md5: cc08030850b294e30ff507a881872051
+      size: 6009
     - path: model/bow.pkl
       hash: md5
-      md5: 3fad7a4c0ec1b2a1fc95334240b40d81
-      size: 39432
+      md5: 5ccc5235616fb00f006b91057f8d07ef
+      size: 39415
     - path: model/model.pkl
       hash: md5
-      md5: 7dc6aed243ae2e83d0af2e966804ad5f
-      size: 46215
+      md5: f47830cb611050c3f0871305afd16a8e
+      size: 4080969
   evaluate:
     cmd: python model-training/restaurant_sentiment/eval.py
     deps:
     - path: data/X_test.pkl
       hash: md5
-      md5: 6cb500da31cb15a3cd315bfc5ac9d834
-      size: 2045041
+      md5: ce3aca7e4a2e7be870c99dd913f42cd6
+      size: 2056401
     - path: data/y_test.pkl
       hash: md5
-      md5: 2206173e02946f0a2594ab9f80fd8f50
-      size: 1665
+      md5: ccb4faa62eb5d61420109c2a30429417
+      size: 1673
     - path: model-training/restaurant_sentiment/eval.py
       hash: md5
-      md5: e1faca072371bbca0f6b9c6c72661dd5
-      size: 1949
+      md5: 26bfb4da12f521a7e47407ddac2b565e
+      size: 1875
     - path: model/model.pkl
       hash: md5
-      md5: 7dc6aed243ae2e83d0af2e966804ad5f
-      size: 46215
+      md5: f47830cb611050c3f0871305afd16a8e
+      size: 4080969
     outs:
     - path: model/metrics.json
       hash: md5
-      md5: 601628fbf6ab87a059c823ef9e0038ce
-      size: 372
+      md5: 10beffa978830043eff5d155bc33f9ca
+      size: 370
