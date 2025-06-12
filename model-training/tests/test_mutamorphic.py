@@ -39,14 +39,14 @@ def test_model_1_synonym_invariance(load_data):
     model = joblib.load(os.path.join(model_path, "model.pkl"))
     bow = joblib.load(os.path.join(model_path, "bow.pkl"))
 
-    synonym_pairs = [
-        ("The food was great", "The food was good"),
-        ("The people were horrible", "The people were terrible"),
-        ("I liked the game", "I loved the game"),
-        ("This house is bad", "This house is gross"),
+    synonym_pairs_with_labels = [
+        ("The food was great", "The food was good", 1),
+        ("The people were horrible", "The people were terrible", 0),
+        ("I liked the game", "I loved the game", 1),
+        ("This house is bad", "This house is gross", 0),
     ]
 
-    for s1, s2 in synonym_pairs:
+    for s1, s2, label in synonym_pairs_with_labels:
         x1 = bow.transform([s1]).toarray()
         x2 = bow.transform([s2]).toarray()
         pred1 = model.predict(x1)[0]
@@ -54,8 +54,8 @@ def test_model_1_synonym_invariance(load_data):
 
         if pred1 != pred2:
             # Save variants to repair file for automatic inconsistency repair
-            append_to_repair_file(s1, pred1)
-            append_to_repair_file(s2, pred1)
+            append_to_repair_file(s1, label)
+            append_to_repair_file(s2, label)
 
         assert pred1 == pred2, (
             f"Model gave different predictions for synonyms:\n"
@@ -75,16 +75,16 @@ def test_model_2_feature_swap_stability(load_data):
     model = joblib.load(os.path.join(model_path, "model.pkl"))
     bow = joblib.load(os.path.join(model_path, "bow.pkl"))
 
-    test_texts = [
-        "Absolutely loved the food and service.",
-        "This place was terrible, not going back.",
-        "Great drinks, fun atmosphere.",
-        "Worst customer service I’ve had in years.",
+    test_texts_with_labels = [
+        ("Absolutely loved the food and service.", 1),
+        ("This place was terrible, not going back.", 0),
+        ("Great drinks, fun atmosphere.", 1),
+        ("Worst customer service I’ve had in years.", 0),
     ]
 
     rng = np.random.default_rng(42)
 
-    for text in test_texts:
+    for text, labels in test_texts_with_labels:
         vec = bow.transform([text]).toarray()
         i, j = rng.integers(0, vec.shape[1], size=2)
         vec_swapped = vec.copy()
@@ -94,8 +94,7 @@ def test_model_2_feature_swap_stability(load_data):
         pred_swapped = model.predict(vec_swapped)[0]
 
         if pred_original != pred_swapped:
-            # Assuming original predction is correct, add for retraining
-            append_to_repair_file(text, pred_original)
+            append_to_repair_file(text, labels)
 
         assert pred_original == pred_swapped, (
             f"Prediction changed after swapping feature indices {i} and {j} "
