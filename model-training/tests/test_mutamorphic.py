@@ -62,8 +62,6 @@ def test_model_1_synonym_invariance(load_data):
             f"'{s1}' → {pred1}, '{s2}' → {pred2}"
         )
 
-        assert 1 == 2
-
 
 def test_model_2_feature_swap_stability(load_data):
     # Swapping BoW features should not change prediction
