@@ -42,8 +42,6 @@ def evaluate(data_path="data", model_path="model"):
     # Dump to json
     with open(os.path.join(model_path, "metrics.json"), "w") as f:
         json.dump(metrics, f, indent=4)
-    
-    # Output to console
     print("Confusion Matrix:")
     print(cm)
     print(f"Accuracy: {acc}")

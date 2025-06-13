@@ -10,7 +10,7 @@ The training pipeline performs the following steps:
 1. Downloads the dataset in `.tsv` from the sentiment-analysis repo in `get_data.py`.
 2. Loads the labelled dataset in `.tsv` format containing restaurant reviews.
 3. Preprocesses the data using methods from the `lib-ml` package in `preprocess.py`.
-4. Trains a Naive Bayes classifier in `train.py`.
+4. Trains a SVC classifier in `train.py`.
 5. Saves the trained model locally to `model/model.pkl`.
 6. Evaluates the trained model in `eval.py`.
 7. Publishes a versioned model artifact to **GitHub Releases**.

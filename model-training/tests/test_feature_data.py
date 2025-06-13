@@ -1,27 +1,17 @@
+import os
 import pytest
 import pandas as pd
-import os
 from sklearn.metrics import accuracy_score
 from joblib import load
 
 from restaurant_sentiment.preprocess import load_and_preprocess_data
 from restaurant_sentiment.train import train
-from restaurant_sentiment.get_data import download_dataset
-from restaurant_sentiment.preprocess import main
+from tests.utils import load_sample_data
 
 
 @pytest.fixture
 def load_data(tmp_path):
-    url = "https://raw.githubusercontent.com/proksch/restaurant-sentiment/" \
-    "main/a1_RestaurantReviews_HistoricDump.tsv"
-    download_dataset(
-        url, os.path.join(tmp_path, "data/RestaurantReviews_HistoricDump.tsv")
-    )
-    main(
-        data_path=os.path.join(tmp_path, "data"),
-        filepath=os.path.join(tmp_path, "data/RestaurantReviews_HistoricDump.tsv"),
-    )
-    return tmp_path
+    return load_sample_data(tmp_path)
 
 @pytest.fixture
 def sample_data(tmp_path):
@@ -46,8 +36,10 @@ def test_data_2_stopword_removal(sample_data):
 
 def test_data_3_cost_features(load_data):
     # The cost of features is being tested.
-    # This test justifies using the number of features we use. If using less features results in better performance,
-    # measured by a 10% increase in performance for statistical significance, then this test case fails.
+    # This test justifies using the number of features we use.
+    # If using less features results in better performance,
+    # measured by a 10% increase in performance for statistical significance,
+    # then this test case fails.
     tmp_path = load_data
     max_feature_opts = [1000, 1420]
     accuracies = []
@@ -67,5 +59,8 @@ def test_data_3_cost_features(load_data):
         accuracies.append(accuracy)
 
     assert (
-            accuracies[0] / accuracies[1] < 1.1
-    ), f"Accuracy with {max_feature_opts[0]} features is more than 10% larger than with {max_feature_opts[1]} features."
+        accuracies[0] / accuracies[1] < 1.1
+    ), (
+        f"Accuracy with {max_feature_opts[0]} features is more than "
+        f"10% larger than with {max_feature_opts[1]} features."
+    )
