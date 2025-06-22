@@ -111,18 +111,3 @@ def test_model_3_permutation_invariance(load_data):
     unshuffled_pred[idx] = y_pred_shuffled
 
     assert (y_pred_orig == unshuffled_pred).all(), "Predictions changed after shuffling test data."
-
-
-def test_data_4_preprocessing_idempotence(sample_data):
-    """
-    Test that running preprocessing twice does not change the output after the first run.
-    """
-    corpus1, labels1 = load_and_preprocess_data(sample_data)
-    # Save to a temp file and reload
-    with tempfile.NamedTemporaryFile(suffix='.tsv', mode='w+', delete=False) as tmp:
-        df = pd.DataFrame({"Review": corpus1, "Sentiment": labels1})
-        df.to_csv(tmp.name, sep='\t', index=False)
-        tmp.flush()
-        corpus2, labels2 = load_and_preprocess_data(tmp.name)
-    assert corpus1 == corpus2, "Preprocessing is not idempotent: corpus changed."
-    assert np.array_equal(labels1, labels2), "Preprocessing is not idempotent: labels changed."

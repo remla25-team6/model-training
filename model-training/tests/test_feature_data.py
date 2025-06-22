@@ -64,3 +64,21 @@ def test_data_3_cost_features(load_data):
         f"Accuracy with {max_feature_opts[0]} features is more than "
         f"10% larger than with {max_feature_opts[1]} features."
     )
+
+def test_data_4_preprocessing_idempotence(sample_data):
+    """
+    Test that running preprocessing twice does not change the output after the first run.
+    """
+    from restaurant_sentiment.preprocess import load_and_preprocess_data
+    import tempfile
+    import pandas as pd
+    import numpy as np
+    corpus1, labels1 = load_and_preprocess_data(sample_data)
+    # Save to a temp file and reload
+    with tempfile.NamedTemporaryFile(suffix='.tsv', mode='w+', delete=False) as tmp:
+        df = pd.DataFrame({"Review": corpus1, "Sentiment": labels1})
+        df.to_csv(tmp.name, sep='\t', index=False)
+        tmp.flush()
+        corpus2, labels2 = load_and_preprocess_data(tmp.name)
+    assert corpus1 == corpus2, "Preprocessing is not idempotent: corpus changed."
+    assert np.array_equal(labels1, labels2), "Preprocessing is not idempotent: labels changed."
