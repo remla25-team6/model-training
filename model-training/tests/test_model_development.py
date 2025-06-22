@@ -4,6 +4,10 @@ from sklearn.metrics import accuracy_score
 from joblib import load
 from restaurant_sentiment.train import train
 from tests.utils import load_sample_data
+import numpy as np
+import tempfile
+import pandas as pd
+from restaurant_sentiment.preprocess import load_and_preprocess_data
 
 
 @pytest.fixture
@@ -78,3 +82,47 @@ def evaluate_model_on_slices(model, X_test, y_test, data_slices):
         accuracy = accuracy_score(y_slice, y_pred)
         slice_accuracies[slice_name] = accuracy
     return slice_accuracies
+
+def test_model_3_permutation_invariance(load_data):
+    """
+    Test that shuffling the test data does not affect the model's predictions.
+    """
+    tmp_path = load_data
+    train(
+        data_path=os.path.join(tmp_path, "data"),
+        model_path=os.path.join(tmp_path, "model"),
+    )
+    model = load(os.path.join(tmp_path, "model/model.pkl"))
+    X_test = load(os.path.join(tmp_path, "data/X_test.pkl"))
+    y_test = load(os.path.join(tmp_path, "data/y_test.pkl"))
+
+    # Get predictions for original order
+    y_pred_orig = model.predict(X_test)
+
+    # Shuffle X_test and y_test in the same way
+    idx = np.arange(len(X_test))
+    np.random.shuffle(idx)
+    X_shuffled = X_test[idx]
+    y_shuffled = y_test[idx]
+    y_pred_shuffled = model.predict(X_shuffled)
+
+    # Unshuffle predictions to original order
+    unshuffled_pred = np.empty_like(y_pred_shuffled)
+    unshuffled_pred[idx] = y_pred_shuffled
+
+    assert (y_pred_orig == unshuffled_pred).all(), "Predictions changed after shuffling test data."
+
+
+def test_data_4_preprocessing_idempotence(sample_data):
+    """
+    Test that running preprocessing twice does not change the output after the first run.
+    """
+    corpus1, labels1 = load_and_preprocess_data(sample_data)
+    # Save to a temp file and reload
+    with tempfile.NamedTemporaryFile(suffix='.tsv', mode='w+', delete=False) as tmp:
+        df = pd.DataFrame({"Review": corpus1, "Sentiment": labels1})
+        df.to_csv(tmp.name, sep='\t', index=False)
+        tmp.flush()
+        corpus2, labels2 = load_and_preprocess_data(tmp.name)
+    assert corpus1 == corpus2, "Preprocessing is not idempotent: corpus changed."
+    assert np.array_equal(labels1, labels2), "Preprocessing is not idempotent: labels changed."
