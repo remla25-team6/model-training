@@ -1,17 +1,5 @@
 schema: '2.0'
 stages:
-  get_data:
-    cmd: python model-training/restaurant_sentiment/get_data.py
-    deps:
-    - path: model-training/restaurant_sentiment/get_data.py
-      hash: md5
-      md5: 6f0157716c4d9b1b1234173b17f82f71
-      size: 1116
-    outs:
-    - path: data/RestaurantReviews_HistoricDump.tsv
-      hash: md5
-      md5: 102f1f4193e0bdebdd6cce7f13e0a839
-      size: 54686
   preprocess:
     cmd: python model-training/restaurant_sentiment/preprocess.py
     deps:

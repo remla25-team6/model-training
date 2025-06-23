@@ -67,14 +67,22 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$PATCH-pre.$DATETIME"
           echo "version=$NEW_VERSION"  >> $GITHUB_ENV
 
-      - name: Download dataset
-        run: python model-training/restaurant_sentiment/get_data.py
+      - name: Setup dvc-gs credentials
+        env: 
+          SERVICE_ACCOUNT_SECRET: ${{ secrets.GSKEYFILE }}
+        run: |
+          echo "$SERVICE_ACCOUNT_SECRET" > keyfile.json
 
-      - name: Preprocess data
-        run: python model-training/restaurant_sentiment/preprocess.py
+      - name: dvc-pull data
+        env: 
+          GOOGLE_APPLICATION_CREDENTIALS: keyfile.json
+        run: |
+          dvc pull
 
-      - name: Train model
-        run: python model-training/restaurant_sentiment/train.py
+      - name: Run DVC pipeline
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: keyfile.json
+        run: dvc repro
 
       - name: Tag pre-release commit
         run: |

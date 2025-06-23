@@ -83,7 +83,7 @@ dvc pull
 ```bash
 dvc repro
 ```
-DVC will run only the necessary stages in order: `get_data → preprocess → train → eval`.
+DVC will run only the necessary stages in order: `preprocess → train → eval`.
 
 ### Rollback to Past Versions
 To roll back to a specific previous version:
