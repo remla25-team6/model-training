@@ -1,7 +1,6 @@
 import os
 import pytest
 import joblib
-import numpy as np
 import pandas as pd
 from tests.utils import load_sample_data
 from restaurant_sentiment.train import train

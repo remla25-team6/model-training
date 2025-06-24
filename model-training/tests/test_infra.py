@@ -65,7 +65,8 @@ def _measure_accuracy_at(repo_path, rev):
     # Set up credentials
     original_keyfile = Path("keyfile.json")
     if not original_keyfile.exists():
-        raise FileNotFoundError(f"Missing keyfile.json in root: {original_keyfile.resolve()}")
+        raise FileNotFoundError(
+            f"Missing keyfile.json in root: {original_keyfile.resolve()}")
     cloned_keyfile = Path(repo_path) / "keyfile.json"
     shutil.copy(original_keyfile, cloned_keyfile)
     env = os.environ.copy()
