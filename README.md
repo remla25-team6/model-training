@@ -83,7 +83,7 @@ dvc pull
 ```bash
 dvc repro
 ```
-DVC will run only the necessary stages in order: `get_data → preprocess → train → eval`.
+DVC will run only the necessary stages in order: `preprocess → train → eval`.
 
 ### Rollback to Past Versions
 To roll back to a specific previous version:
@@ -221,6 +221,44 @@ pytest -v --cov=.
 ```bash
 python scripts/calculate_ml_test_score.py
 ```
+
+## CI/CD
+
+This project uses GitHub Actions for automated testing and versioned model artifact releases.
+
+### Release
+
+To publish an official release:
+
+1. Ensure all changes are committed and pushed to any desired `release` branch.
+2. Tag the commit with a version like `v0.1.0` and push:
+
+   ```bash
+   git tag v0.1.0  
+   git push origin v0.1.0  
+   ```
+3. This triggers the `release.yml` workflow, which:
+
+   * Pulls tracked model artifacts (e.g., `model.pkl`, `bow.pkl`, `metrics.json`) using DVC.
+   * Runs `dvc repro` to re-execute the pipeline and ensure consistency with the committed DVC state.
+   * Packages and publishes these files as part of a GitHub Release under the specified version tag.
+   * Attaches relevant metadata and metrics for reproducibility.
+
+### Pre-Release
+
+To publish a pre-release:
+
+1. Push a commit to the `main` branch (i.e. merge a pull request to `main`).
+2. The `prerelease.yml` workflow automatically runs on every commit to `main`.
+3. It pulls the latest DVC-tracked artifacts and publishes a pre-release on GitHub with a timestamped version like `0.1.0-pre.20250625.184512`.
+
+### Testing
+
+To ensure stability:
+
+1. Every commit and pull request triggers the `testing.yml` workflow.
+2. It creates a Python virtual environment, installs dependencies, pulls required DVC data, and runs the full `pytest` test suite.
+3. Updates the `pylint`, `coverage` and `ml-test-score` badges in the README to reflect the latest repository state.
 
 ## AI Disclaimer
 This documented was refined using ChatGPT 4o.

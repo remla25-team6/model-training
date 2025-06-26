@@ -179,7 +179,8 @@ cython_debug/
 model/
 
 # Data
-data/
+data/*
+!data/RestaurantReviews_HistoricDump.tsv.dvc
 
 # Google Cloud Storage Keyfile
 keyfile.json

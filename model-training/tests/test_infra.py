@@ -62,8 +62,19 @@ Y_TEST = Path("data") / "y_test.pkl"
 
 
 def _measure_accuracy_at(repo_path, rev):
-    subprocess.run(["git", "checkout", rev], cwd=repo_path, check=True)
-    subprocess.run(["dvc", "repro", "-q"], cwd=repo_path, check=True)
+    # Set up credentials
+    original_keyfile = Path("keyfile.json")
+    if not original_keyfile.exists():
+        raise FileNotFoundError(
+            f"Missing keyfile.json in root: {original_keyfile.resolve()}")
+    cloned_keyfile = Path(repo_path) / "keyfile.json"
+    shutil.copy(original_keyfile, cloned_keyfile)
+    env = os.environ.copy()
+    env["GOOGLE_APPLICATION_CREDENTIALS"] = str(cloned_keyfile)
+
+    subprocess.run(["git", "checkout", rev], cwd=repo_path, check=True, env=env)
+    subprocess.run(["dvc", "pull"], cwd=repo_path, check=True, env=env)
+    subprocess.run(["dvc", "repro"], cwd=repo_path, check=True, env=env)
     mdl = load(Path(repo_path) / MODEL)
     X = load(Path(repo_path) / X_TEST)
     y = load(Path(repo_path) / Y_TEST)
